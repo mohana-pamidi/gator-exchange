@@ -2,6 +2,8 @@
 
 ## To get started run:
 
+npm init
+
 npm install
 
 npm install express
