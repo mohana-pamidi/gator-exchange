@@ -9,7 +9,7 @@ function Signup()
 
     const handleSubmit = (e) => {
         e.preventDefault()
-        axios.post('', {name, email, password})
+        axios.post('http://localhost:3001/register', {name, email, password})
         .then(result => console.log(result))
         .catch(err => console.log(err))
     }
@@ -37,7 +37,7 @@ function Signup()
                         <strong>Email</strong>
                     </label>
                     <input
-                        type="text"
+                        type="email"
                         placeholder="Enter Email"
                         autoComplete="off"
                         name="email"
@@ -51,7 +51,7 @@ function Signup()
                         <strong>Password</strong>
                     </label>
                     <input
-                        type="text"
+                        type="password"
                         placeholder="Enter Password"
                         autoComplete="off"
                         name="Password"
