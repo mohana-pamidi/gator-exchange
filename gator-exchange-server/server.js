@@ -4,10 +4,15 @@ const cors = require("cors")
 
 const app = express() 
 
-const PORT = 3000
+const PORT = 5000
 
 app.use(cors())  // mounts middleware
 app.use(express.json())
+
+// test route
+app.get("/api/test", (req, res) => {
+    res.json({ message: "backend route working" });
+})
 
 app.listen(PORT, () => {
     connect.connectToServer()

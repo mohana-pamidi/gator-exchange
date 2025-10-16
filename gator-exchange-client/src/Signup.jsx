@@ -4,7 +4,7 @@ function Signup()
 {
     return (
         <div className="d-flex justify-content-center align-items-center bg-secondary vh-100">
-            <div className="bg-white p-3 style={{ width: '400px' }}">
+            <div className="bg-white p-3" style={{ width: '600px' }}>
                 <h2>Register</h2>
                 <form>
                 <div className="mb-3">
