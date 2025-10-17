@@ -7,3 +7,6 @@ npm init
 npm install
 
 npm install express
+
+# Install dependencies 
+npm install dotenv
