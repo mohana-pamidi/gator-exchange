@@ -1,9 +1,34 @@
 const mongoose = require('mongoose')
 
 const usersSchema = new mongoose.Schema({
-    name: String,
-    email: String,
-    password: String
+    name: {
+        type: String,
+        required: true
+    },
+    email: {
+        type: String,
+        required: true,
+        unique: true,
+        lowercase: true
+    },
+    password: {
+        type: String,
+        required: true
+    },
+    isVerified: {
+        type: Boolean,
+        default: false
+    },
+    verificationToken: {
+        type: String
+    },
+    verificationExpires: {
+        type: Date
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
+    }
 })
 
 const usersModel = mongoose.model("users", usersSchema)
