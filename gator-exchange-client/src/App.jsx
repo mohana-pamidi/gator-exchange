@@ -4,6 +4,7 @@ import Signup from './Signup'
 import {BrowserRouter, Routes, Route} from 'react-router-dom'
 import Login from "./Login"
 import Home from "./Home"
+import Profile from './Profile'
 // import reactLogo from './assets/react.svg'
 // import viteLogo from '/vite.svg'
 // import './App.css'
@@ -22,9 +23,7 @@ function App() {
         <Route path='/register' element={<Signup />}></Route>
         <Route path='/login' element={<Login />}></Route>
         <Route path="/home" element={<Home />}></Route>
-
-
-
+        <Route path="/profile" element={<Profile />}></Route>
       </Routes>
     </BrowserRouter>
   ) 

@@ -54,6 +54,53 @@ app.post("/register", (req, res) => {
         res.status(400).json(err)
     })
 })
+
+// Get user profile by ID
+app.get("/profile/:id", async (req, res) => {
+    try {
+        const user = await usersModel.findById(req.params.id).select('-password');
+        if (user) {
+            res.json(user);
+        } else {
+            res.status(404).json({ error: "User not found" });
+        }
+    } catch (err) {
+        console.error("Profile fetch error:", err);
+        res.status(400).json(err);
+    }
+})
+
+// Update user profile (email and password only, name is read-only)
+app.put("/profile/:id", async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const updateData = {};
+        
+        // Only update fields that are provided
+        if (email) updateData.email = email;
+        if (password) updateData.password = password;
+        
+        const user = await usersModel.findByIdAndUpdate(
+            req.params.id,
+            updateData,
+            { new: true, runValidators: true }
+        ).select('-password');
+        
+        if (user) {
+            res.json({ 
+                status: "Success", 
+                message: "Profile updated successfully",
+                user: user
+            });
+        } else {
+            res.status(404).json({ error: "User not found" });
+        }
+    } catch (err) {
+        console.error("Profile update error:", err);
+        res.status(400).json(err);
+    }
+})
+
 app.listen(3001, async () => {
     try {
         // Connect Mongoose

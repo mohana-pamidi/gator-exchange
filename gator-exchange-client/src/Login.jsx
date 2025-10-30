@@ -17,7 +17,16 @@ function Login()
             console.log(result)
             if(result.data === "Success")
             {
-                navigate('/home')
+                navigate('/home', {
+                    state: {
+                        userId: result.data.user.id,
+                        userName: result.data.user.name,
+                        userEmail: result.data.user.email
+                    }
+                })
+            }
+            else {
+                alert
             }
             
         })
@@ -26,7 +35,7 @@ function Login()
     return (
         <div className="d-flex justify-content-center align-items-center bg-secondary vh-100">
             <div className="bg-white p-3 rounded" style={{ width: '400px' }}>
-                <h2>Register</h2>
+                <h2>Login</h2>
                 <form onSubmit={handleSubmit}>
             
                 <div className="mb-3">
@@ -61,7 +70,7 @@ function Login()
                     Login 
                 </button>
                 </form>
-                <p>Already have an account?</p>
+                <p>Don't have an account?</p>
                 <Link to="/register" className="btn btn-default border w-100 bg-light rounded-0 text-decoration-none">
                     Sign Up
                 </Link>
