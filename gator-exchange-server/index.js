@@ -4,6 +4,7 @@ const cors = require("cors")
 const usersModel = require("./models/users")
 const connect = require("./connect")
 const posts = require("./postRoutes")
+const itemRoutes = require("./itemRoutes")
 require("dotenv").config({path: "./config.env"})
 
 const app = express()
@@ -13,6 +14,9 @@ app.use(cors())
 
 //create database connection
 mongoose.connect(process.env.ATLAS_URI)
+
+// Use item routes
+app.use('/api/items', itemRoutes)
 
 app.post("/login", (req, res) => {
     const {email, password} = req.body;
@@ -25,7 +29,13 @@ app.post("/login", (req, res) => {
         {
            if(user.password === password)
             {
-                res.json("Success")
+                res.json({
+                    status: "Success",
+                    user: {
+                        name: user.name,
+                        email: user.email
+                    }
+                })
             } 
             else
             {
@@ -64,6 +74,6 @@ app.listen(3001, async () => {
         console.log(`Server is running on port: 3001`)
         
     } catch (error) {
-        console.error("❌ Database connection error:", error)
+        console.error("Database connection error:", error)
     }
 })

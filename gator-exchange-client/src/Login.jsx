@@ -15,9 +15,17 @@ function Login()
         
         .then(result => {
             console.log(result)
-            if(result.data === "Success")
+            if(result.data.status === "Success")
             {
-                navigate('/home')
+                navigate('/home', { 
+                    state: { 
+                        email: result.data.user.email,
+                        name: result.data.user.name 
+                    } 
+                })
+            } else if(result.data === "Success") {
+                // Fallback for old response format
+                navigate('/home', { state: { email: email } })
             }
             
         })
