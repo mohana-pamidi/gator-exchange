@@ -29,9 +29,6 @@ function Login() {
                         name: result.data.user.name 
                     } 
                 })
-            } else if(result.data === "Success") {
-                // Fallback for old response format
-                navigate('/home', { state: { email: email } })
             }
         })
         .catch(err => {
