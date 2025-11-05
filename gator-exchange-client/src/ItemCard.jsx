@@ -35,7 +35,7 @@ function ItemCard({ item }) {
                     </p>
                     <p className="card-text">
                         <small className="text-muted">
-                            Listed by: {item.ownerEmail}
+                            Listed by: {item.ownerName}
                         </small>
                     </p>
                     {item.images && item.images.length > 1 && (

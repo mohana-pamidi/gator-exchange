@@ -42,7 +42,9 @@ router.post('/create', upload.array('images', 10), async (req, res) => {
 
         // find user by email to get ObjectId
         const usersModel = require('./models/users')
-        const user = await usersModel.findOne({ email: ownerEmail })
+        const user = await usersModel.findOne({ email: ownerEmail.toLowerCase() })
+        console.log('Looking for user with email:', ownerEmail.toLowerCase())
+        console.log('Found user:', user)
         if (!user) {
             return res.status(404).json({ error: 'User not found' })
         }
@@ -57,10 +59,12 @@ router.post('/create', upload.array('images', 10), async (req, res) => {
                 endDate: new Date(endDate)
             },
             owner: user._id,
-            ownerEmail
+            ownerEmail,
+            ownerName: user.name
         })
 
         const savedItem = await newItem.save()
+        console.log('Saved item:', savedItem)
         res.json({ success: true, item: savedItem })
 
     } catch (error) {

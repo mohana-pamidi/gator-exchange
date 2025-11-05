@@ -38,6 +38,10 @@ const itemSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    ownerName: {
+        type: String,
+        required: true
+    },
     createdAt: {
         type: Date,
         default: Date.now
