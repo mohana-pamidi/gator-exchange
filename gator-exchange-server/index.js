@@ -6,6 +6,7 @@ const nodemailer = require('nodemailer')
 const usersModel = require("./models/users")
 const connect = require("./connect")
 const posts = require("./postRoutes")
+const itemRoutes = require("./itemRoutes")
 require("dotenv").config({path: "./config.env"})
 
 const app = express()
@@ -64,6 +65,9 @@ async function sendVerificationEmail(email, token, name) {
 }
 
 mongoose.connect(process.env.ATLAS_URI)
+
+// Use item routes
+app.use('/api/items', itemRoutes)
 
 app.post("/login", async (req, res) => {
     const {email, password} = req.body;
@@ -305,6 +309,6 @@ app.listen(3001, async () => {
         connect.connectToServer()
         console.log(`Server is running on port: 3001`)
     } catch (error) {
-        console.error("❌ Database connection error:", error)
+        console.error("Database connection error:", error)
     }
 })

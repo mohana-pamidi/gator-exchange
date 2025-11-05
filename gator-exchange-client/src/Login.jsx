@@ -23,7 +23,12 @@ function Login() {
             if (result.data.success) {
                 // Store user data in localStorage
                 localStorage.setItem('user', JSON.stringify(result.data.user))
-                navigate('/home')
+                navigate('/home', { 
+                    state: { 
+                        email: result.data.user.email,
+                        name: result.data.user.name 
+                    } 
+                })
             }
         })
         .catch(err => {
