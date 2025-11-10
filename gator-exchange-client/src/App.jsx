@@ -4,6 +4,8 @@ import Signup from './Signup'
 import {BrowserRouter, Routes, Route} from 'react-router-dom'
 import Login from "./Login"
 import Home from "./Home"
+import ItemDetail from "./ItemDetail"
+import Messages from "./Messages"
 // import reactLogo from './assets/react.svg'
 // import viteLogo from '/vite.svg'
 // import './App.css'
@@ -22,6 +24,8 @@ function App() {
         <Route path='/register' element={<Signup />}></Route>
         <Route path='/login' element={<Login />}></Route>
         <Route path="/home" element={<Home />}></Route>
+        <Route path="/item/:id" element={<ItemDetail />}></Route>
+        <Route path="/messages" element={<Messages />}></Route>
         <Route path="/" element={<Login />}></Route>
       </Routes>
     </BrowserRouter>

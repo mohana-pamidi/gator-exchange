@@ -1,11 +1,14 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import ItemListing from './ItemListing'
+import ItemEdit from './ItemEdit'
 import ItemCard from './ItemCard'
 import { useLocation, useNavigate } from 'react-router-dom'
 
 function Home() {
     const [showModal, setShowModal] = useState(false)
+    const [showEditModal, setShowEditModal] = useState(false)
+    const [editingItem, setEditingItem] = useState(null)
     const [items, setItems] = useState([])
     const [loading, setLoading] = useState(true)
     const [userEmail, setUserEmail] = useState('')
@@ -50,6 +53,33 @@ function Home() {
         fetchItems() // refresh the items after adding new one
     }
 
+    const handleEditModalClose = () => {
+        setShowEditModal(false)
+        setEditingItem(null)
+        fetchItems() // refresh the items after editing
+    }
+
+    const handleEdit = (item) => {
+        setEditingItem(item)
+        setShowEditModal(true)
+    }
+
+    const handleDelete = async (itemId) => {
+        try {
+            const response = await axios.delete(`http://localhost:3001/api/items/${itemId}`, {
+                data: { ownerEmail: userEmail }
+            })
+            
+            if (response.data.success) {
+                alert('Item deleted successfully')
+                fetchItems() // refresh the items list
+            }
+        } catch (error) {
+            console.error('Error deleting item:', error)
+            alert('Failed to delete item. Please try again.')
+        }
+    }
+
     const handleLogout = () => {
         localStorage.removeItem('userEmail')
         localStorage.removeItem('userName')
@@ -70,12 +100,19 @@ function Home() {
 
     return (
         <div className="container mt-4">
-            {/* Header */}            <div className="d-flex justify-content-between align-items-center mb-4">
+            {/* Header */}
+            <div className="d-flex justify-content-between align-items-center mb-4">
                 <div>
                     <h2>Gator Exchange</h2>
                     <p className="text-muted">Welcome back, {userName}!</p>
                 </div>
                 <div>
+                    <button 
+                        className="btn btn-outline-info me-2"
+                        onClick={() => navigate('/messages')}
+                    >
+                        Messages
+                    </button>
                     <button 
                         className="btn btn-primary me-2"
                         onClick={() => setShowModal(true)}
@@ -102,7 +139,13 @@ function Home() {
                     ) : (
                         <div className="d-flex flex-wrap gap-3">
                             {items.map((item) => (
-                                <ItemCard key={item._id} item={item} />
+                                <ItemCard 
+                                    key={item._id} 
+                                    item={item}
+                                    userEmail={userEmail}
+                                    onEdit={handleEdit}
+                                    onDelete={handleDelete}
+                                />
                             ))}
                         </div>
                     )}
@@ -114,6 +157,14 @@ function Home() {
                 show={showModal} 
                 onClose={handleModalClose}
                 userEmail={userEmail}
+            />
+
+            {/* Item Edit Modal */}
+            <ItemEdit 
+                show={showEditModal}
+                onClose={handleEditModalClose}
+                userEmail={userEmail}
+                item={editingItem}
             />
         </div>
     )
