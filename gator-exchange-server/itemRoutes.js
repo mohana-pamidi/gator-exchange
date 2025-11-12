@@ -96,4 +96,114 @@ router.get('/user/:email', async (req, res) => {
     }
 })
 
+// get single item by id
+router.get('/:id', async (req, res) => {
+    try {
+        const { id } = req.params
+        const item = await itemModel.findById(id)
+        if (!item) {
+            return res.status(404).json({ error: 'Item not found' })
+        }
+        res.json(item)
+    } catch (error) {
+        console.error('Error fetching item:', error)
+        res.status(500).json({ error: 'Failed to fetch item' })
+    }
+})
+
+// update item
+router.put('/:id', upload.array('images', 10), async (req, res) => {
+    try {
+        const { id } = req.params
+        const { name, description, hourlyRate, startDate, endDate, ownerEmail, existingImages } = req.body
+        
+        console.log('Update request for item:', id)
+        console.log('Request body:', req.body)
+        
+        // verify item exists and user is owner
+        const item = await itemModel.findById(id)
+        if (!item) {
+            return res.status(404).json({ error: 'Item not found' })
+        }
+        if (item.ownerEmail !== ownerEmail) {
+            return res.status(403).json({ error: 'Not authorized to edit this item' })
+        }
+
+        // handle images: keep existing + add new ones
+        let imageUploads = []
+        
+        // parse existing images if provided
+        if (existingImages) {
+            try {
+                imageUploads = JSON.parse(existingImages)
+            } catch (e) {
+                console.error('Error parsing existing images:', e)
+            }
+        }
+
+        // add new images
+        if (req.files && req.files.length > 0) {
+            req.files.forEach((file) => {
+                const base64String = file.buffer.toString('base64')
+                const dataUri = `data:${file.mimetype};base64,${base64String}`
+                
+                imageUploads.push({
+                    url: dataUri,
+                    filename: file.originalname,
+                    mimetype: file.mimetype,
+                    size: file.size
+                })
+            })
+        }
+
+        const updateData = {
+            name,
+            description,
+            hourlyRate: parseFloat(hourlyRate),
+            images: imageUploads,
+            availableDates: {
+                startDate: new Date(startDate),
+                endDate: new Date(endDate)
+            }
+        }
+
+        console.log('Updating item with data:', updateData)
+
+        const updatedItem = await itemModel.findByIdAndUpdate(id, updateData, { new: true })
+        console.log('Updated item:', updatedItem)
+        res.json({ success: true, item: updatedItem })
+
+    } catch (error) {
+        console.error('Error updating item:', error)
+        res.status(500).json({ error: 'Failed to update item', details: error.message })
+    }
+})
+
+// delete item
+router.delete('/:id', async (req, res) => {
+    try {
+        const { id } = req.params
+        const { ownerEmail } = req.body
+        
+        console.log('Delete request for item:', id, 'by user:', ownerEmail)
+        
+        // verify item exists and user is owner
+        const item = await itemModel.findById(id)
+        if (!item) {
+            return res.status(404).json({ error: 'Item not found' })
+        }
+        if (item.ownerEmail !== ownerEmail) {
+            return res.status(403).json({ error: 'Not authorized to delete this item' })
+        }
+
+        await itemModel.findByIdAndDelete(id)
+        console.log('Item deleted successfully')
+        res.json({ success: true, message: 'Item deleted successfully' })
+
+    } catch (error) {
+        console.error('Error deleting item:', error)
+        res.status(500).json({ error: 'Failed to delete item', details: error.message })
+    }
+})
+
 module.exports = router
