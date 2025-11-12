@@ -114,7 +114,7 @@ Gator Exchange is a MERN stack web application that enables university students 
    ```
 4. Enter your URI in `config.env`
    ```js
-   ATLAS_URI = = "ENTER YOUR URI";
+   ATLAS_URI = "ENTER YOUR URI";
    ```
 5. Start the server
 
@@ -153,7 +153,6 @@ _For more examples, please refer to the [Documentation](https://example.com)_
 - [ ] Add rating and review system for sellers
 - [ ] Improve UI/UX and responsive design
 - [ ] Add admin dashboard for managing users and listings
-- [ ] Implement notifications system
 - [ ] Conduct testing and bug fixes
 - [ ] Deploy final version to hosting platform
 
