@@ -2,12 +2,13 @@ import { useState } from 'react'
 import { Link } from "react-router-dom";
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
-
+import { Eye, EyeOff } from 'lucide-react';
 function Login() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [error, setError] = useState('')
     const [showResend, setShowResend] = useState(false)
+    const [showPassword, setShowPassword] = useState(false)                     
     const [resendMessage, setResendMessage] = useState('')
     const navigate = useNavigate()
 
@@ -81,11 +82,12 @@ function Login() {
                     </div>
 
                     <div className="mb-3">
-                        <label htmlFor="Password">
-                            <strong>Password</strong>
-                        </label>
+                    <label htmlFor="Password">
+                        <strong>Password</strong>
+                    </label>
+                    <div className="position-relative">
                         <input
-                            type="password"
+                            type={showPassword ? "text" : "password"}
                             placeholder="Enter Password"
                             autoComplete="off"
                             name="Password"
@@ -93,7 +95,16 @@ function Login() {
                             onChange={(e) => setPassword(e.target.value)}
                             required
                         />
+                        <button
+                            type="button"
+                            className="btn btn-link position-absolute end-0 top-50 translate-middle-y"
+                            onClick={() => setShowPassword(!showPassword)}
+                            style={{ textDecoration: 'none', zIndex: 10 }}
+                        >
+                            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                        </button>
                     </div>
+                </div>
 
                     {error && (
                         <div className="alert alert-warning py-2" role="alert">

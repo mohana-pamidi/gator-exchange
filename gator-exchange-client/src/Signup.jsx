@@ -9,12 +9,16 @@ function Signup() {
     const [password, setPassword] = useState('')
     const [error, setError] = useState('')
     const [success, setSuccess] = useState('')
+    const [showResend, setShowResend] = useState(false)
+    const [resendMessage, setResendMessage] = useState('')
     const navigate = useNavigate()
 
     const handleSubmit = (e) => {
         e.preventDefault()
         setError('')
         setSuccess('')
+        setShowResend(false)
+        setResendMessage('')
 
         // Client-side validation for UFL email
         if (!email.endsWith('@ufl.edu')) {
@@ -35,9 +39,33 @@ function Signup() {
         })
         .catch(err => {
             console.log(err)
-            setError(err.response?.data?.message || 'Registration failed. Please try again.')
+            const errorData = err.response?.data
+            
+            if (errorData?.needsVerification) {
+                setError(errorData.message)
+                setShowResend(true)
+            } else {
+                setError(errorData?.message || 'Registration failed. Please try again.')
+            }
         })
     }
+
+    const handleResendVerification = () => {
+        setResendMessage('')
+        
+        axios.post('http://localhost:3001/resend-verification', {email})
+        .then(result => {
+            console.log(result)
+            if (result.data.success) {
+                setResendMessage(result.data.message)
+            }
+        })
+        .catch(err => {
+            console.log(err)
+            setResendMessage(err.response?.data?.message || 'Failed to resend email')
+        })
+    }
+
 
     return (
         <div className="d-flex justify-content-center align-items-center bg-secondary vh-100">
@@ -93,6 +121,24 @@ function Signup() {
                     {error && (
                         <div className="alert alert-danger py-2" role="alert">
                             {error}
+                        </div>
+                    )}
+
+                    {showResend && (
+                        <div className="mb-3">
+                            <button 
+                                type="button" 
+                                className="btn btn-info w-100 rounded-0"
+                                onClick={handleResendVerification}
+                            >
+                                Resend Verification Email
+                            </button>
+                        </div>
+                    )}
+
+                    {resendMessage && (
+                        <div className="alert alert-info py-2" role="alert">
+                            {resendMessage}
                         </div>
                     )}
 
