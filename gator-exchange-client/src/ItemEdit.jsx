@@ -15,17 +15,28 @@ function ItemEdit({ show, onClose, userEmail, item }) {
     const [preview, setPreview] = useState([])
 
     useEffect(() => {
-        if (item) {
+        if (show && item) {
+            // safely parse dates
+            const startDate = typeof item.availableDates.startDate === 'string' 
+                ? item.availableDates.startDate.split('T')[0]
+                : new Date(item.availableDates.startDate).toISOString().split('T')[0]
+            
+            const endDate = typeof item.availableDates.endDate === 'string'
+                ? item.availableDates.endDate.split('T')[0]
+                : new Date(item.availableDates.endDate).toISOString().split('T')[0]
+
             setFormData({
                 name: item.name,
                 description: item.description,
                 hourlyRate: item.hourlyRate,
-                startDate: item.availableDates.startDate.split('T')[0],
-                endDate: item.availableDates.endDate.split('T')[0]
+                startDate: startDate,
+                endDate: endDate
             })
             setExistingImages(item.images || [])
+            setNewImages([])
+            setPreview([])
         }
-    }, [item])
+    }, [show, item])
 
     const handleInputChange = (e) => {
         setFormData({
@@ -104,18 +115,9 @@ function ItemEdit({ show, onClose, userEmail, item }) {
 
             if (response.data.success) {
                 alert('Item updated successfully!')
-                // reset form
-                setFormData({
-                    name: '',
-                    description: '',
-                    hourlyRate: '',
-                    startDate: '',
-                    endDate: ''
-                })
-                setExistingImages([])
-                setNewImages([])
-                setPreview([])
                 onClose()
+                // Refresh the page to show updated item
+                window.location.reload()
             }
         } catch (error) {
             console.error('Error updating listing:', error)
