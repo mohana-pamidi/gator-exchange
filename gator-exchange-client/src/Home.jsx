@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
 import ItemListing from './ItemListing'
+import ItemEdit from './ItemEdit'
 import ItemCard from './ItemCard'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { User, LogOut, Plus, Menu } from 'lucide-react'
 
 function Home() {
     const [showModal, setShowModal] = useState(false)
+    const [showEditModal, setShowEditModal] = useState(false)
+    const [editingItem, setEditingItem] = useState(null)
     const [items, setItems] = useState([])
     const [loading, setLoading] = useState(true)
     const [userEmail, setUserEmail] = useState('')
@@ -17,12 +20,10 @@ function Home() {
     const navigate = useNavigate()
 
     useEffect(() => {
-        // get user email from login state or localStorage
         const email = location.state?.email || localStorage.getItem('userEmail')
         const name = location.state?.name || localStorage.getItem('userName')
         
         if (!email) {
-            // if no user is logged in, redirect them to landing page
             navigate('/')
             return
         }
@@ -50,6 +51,33 @@ function Home() {
     const handleModalClose = () => {
         setShowModal(false)
         fetchItems()
+    }
+
+    const handleEditModalClose = () => {
+        setShowEditModal(false)
+        setEditingItem(null)
+        fetchItems()
+    }
+
+    const handleEdit = (item) => {
+        setEditingItem(item)
+        setShowEditModal(true)
+    }
+
+    const handleDelete = async (itemId) => {
+        try {
+            const response = await axios.delete(`http://localhost:3001/api/items/${itemId}`, {
+                data: { ownerEmail: userEmail }
+            })
+            
+            if (response.data.success) {
+                alert('Item deleted successfully')
+                fetchItems()
+            }
+        } catch (error) {
+            console.error('Error deleting item:', error)
+            alert('Failed to delete item. Please try again.')
+        }
     }
 
     const handleLogout = () => {
@@ -155,7 +183,13 @@ function Home() {
                         ) : (
                             <div className="d-flex flex-wrap gap-3">
                                 {items.map((item) => (
-                                    <ItemCard key={item._id} item={item} />
+                                    <ItemCard 
+                                        key={item._id} 
+                                        item={item}
+                                        userEmail={userEmail}
+                                        onEdit={handleEdit}
+                                        onDelete={handleDelete}
+                                    />
                                 ))}
                             </div>
                         )}
@@ -168,6 +202,14 @@ function Home() {
                 show={showModal} 
                 onClose={handleModalClose}
                 userEmail={userEmail}
+            />
+
+            {/* Item Edit Modal */}
+            <ItemEdit 
+                show={showEditModal}
+                onClose={handleEditModalClose}
+                userEmail={userEmail}
+                item={editingItem}
             />
 
             {/* Click outside dropdown to close */}
