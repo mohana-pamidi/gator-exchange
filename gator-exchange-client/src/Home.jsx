@@ -3,6 +3,7 @@ import axios from 'axios'
 import ItemListing from './ItemListing'
 import ItemCard from './ItemCard'
 import { useLocation, useNavigate } from 'react-router-dom'
+import { User, LogOut, Plus, Menu } from 'lucide-react'
 
 function Home() {
     const [showModal, setShowModal] = useState(false)
@@ -10,6 +11,7 @@ function Home() {
     const [loading, setLoading] = useState(true)
     const [userEmail, setUserEmail] = useState('')
     const [userName, setUserName] = useState('')
+    const [showDropdown, setShowDropdown] = useState(false)
     
     const location = useLocation()
     const navigate = useNavigate()
@@ -20,16 +22,16 @@ function Home() {
         const name = location.state?.name || localStorage.getItem('userName')
         
         if (!email) {
-            // if no user is logged in, redirect them to login
-            navigate('/login')
+            // if no user is logged in, redirect them to landing page
+            navigate('/')
             return
         }
         
         setUserEmail(email)
         setUserName(name)
-        localStorage.setItem('userEmail', email) // store for future use
+        localStorage.setItem('userEmail', email)
         if (name) {
-            localStorage.setItem('userName', name) // store name for future use
+            localStorage.setItem('userName', name)
         }
         fetchItems()
     }, [location, navigate])
@@ -47,13 +49,13 @@ function Home() {
 
     const handleModalClose = () => {
         setShowModal(false)
-        fetchItems() // refresh the items after adding new one
+        fetchItems()
     }
 
     const handleLogout = () => {
         localStorage.removeItem('userEmail')
         localStorage.removeItem('userName')
-        navigate('/login')
+        navigate('/')
     }
 
     if (loading) {
@@ -69,43 +71,95 @@ function Home() {
     }
 
     return (
-        <div className="container mt-4">
-            {/* Header */}            <div className="d-flex justify-content-between align-items-center mb-4">
-                <div>
-                    <h2>Gator Exchange</h2>
-                    <p className="text-muted">Welcome back, {userName}!</p>
+        <div style={{ minHeight: '100vh', backgroundColor: '#f8f9fa' }}>
+            {/* Navigation Bar */}
+            <nav className="navbar navbar-light bg-white border-bottom sticky-top">
+                <div className="container-fluid px-4">
+                    <div>
+                        <h2 className="mb-0 fw-bold" style={{ color: '#0021A5' }}>Gator Exchange</h2>
+                        <p className="mb-0 text-muted">Welcome back, {userName}!</p>
+                    </div>
+                    <div className="d-flex align-items-center gap-2">
+                        <button 
+                            className="btn btn-primary"
+                            onClick={() => setShowModal(true)}
+                            style={{ backgroundColor: '#0021A5', borderColor: '#0021A5' }}
+                        >
+                            <Plus size={18} className="me-1" />
+                            List an Item
+                        </button>
+                        
+                        <div className="dropdown">
+                            <button
+                                className="btn btn-outline-secondary d-flex align-items-center"
+                                onClick={() => setShowDropdown(!showDropdown)}
+                            >
+                                <Menu size={20} />
+                            </button>
+                            {showDropdown && (
+                                <div 
+                                    className="dropdown-menu dropdown-menu-end show" 
+                                    style={{ 
+                                        position: 'absolute',
+                                        right: 0,
+                                        left: 'auto',
+                                        top: '100%',
+                                        marginTop: '0.5rem'
+                                    }}
+                                >
+                                    <a 
+                                        className="dropdown-item d-flex align-items-center" 
+                                        href="#" 
+                                        onClick={(e) => {
+                                            e.preventDefault()
+                                            navigate('/profile')
+                                        }}
+                                    >
+                                        <User size={16} className="me-2" />
+                                        My Profile
+                                    </a>
+                                    <hr className="dropdown-divider" />
+                                    <a 
+                                        className="dropdown-item text-danger d-flex align-items-center" 
+                                        href="#" 
+                                        onClick={(e) => {
+                                            e.preventDefault()
+                                            handleLogout()
+                                        }}
+                                    >
+                                        <LogOut size={16} className="me-2" />
+                                        Logout
+                                    </a>
+                                </div>
+                            )}
+                        </div>
+                    </div>
                 </div>
-                <div>
-                    <button 
-                        className="btn btn-primary me-2"
-                        onClick={() => setShowModal(true)}
-                    >
-                        List an Item
-                    </button>
-                    <button 
-                        className="btn btn-outline-secondary"
-                        onClick={handleLogout}
-                    >
-                        Logout
-                    </button>
-                </div>
-            </div>
+            </nav>
 
-            {/* Items Grid */}
-            <div className="row">
-                <div className="col-12">
-                    <h4 className="mb-3">Available Items</h4>
-                    {items.length === 0 ? (
-                        <div className="text-center py-5">
-                            <p className="text-muted">No items listed yet. Be the first to list an item!</p>
-                        </div>
-                    ) : (
-                        <div className="d-flex flex-wrap gap-3">
-                            {items.map((item) => (
-                                <ItemCard key={item._id} item={item} />
-                            ))}
-                        </div>
-                    )}
+            <div className="container mt-4">
+                {/* Items Section */}
+                <div className="row">
+                    <div className="col-12">
+                        <h4 className="mb-3 fw-semibold">Available Items</h4>
+                        {items.length === 0 ? (
+                            <div className="text-center py-5">
+                                <p className="text-muted">No items listed yet. Be the first to list an item!</p>
+                                <button 
+                                    className="btn btn-primary mt-3"
+                                    onClick={() => setShowModal(true)}
+                                >
+                                    List an Item
+                                </button>
+                            </div>
+                        ) : (
+                            <div className="d-flex flex-wrap gap-3">
+                                {items.map((item) => (
+                                    <ItemCard key={item._id} item={item} />
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
 
@@ -115,8 +169,30 @@ function Home() {
                 onClose={handleModalClose}
                 userEmail={userEmail}
             />
+
+            {/* Click outside dropdown to close */}
+            {showDropdown && (
+                <div 
+                    style={{
+                        position: 'fixed',
+                        top: 0,
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        zIndex: 999
+                    }}
+                    onClick={() => setShowDropdown(false)}
+                />
+            )}
+
+            <style>{`
+                .dropdown-menu.show {
+                    display: block;
+                    z-index: 1000;
+                }
+            `}</style>
         </div>
     )
 }
 
-export default Home;
+export default Home
