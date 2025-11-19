@@ -4,25 +4,23 @@ import Signup from './Signup'
 import {BrowserRouter, Routes, Route} from 'react-router-dom'
 import Login from "./Login"
 import Home from "./Home"
-// import reactLogo from './assets/react.svg'
-// import viteLogo from '/vite.svg'
-// import './App.css'
+import Profile from "./Profile"
+import LandingPage from "./LandingPage"
 
 function App() {
   const [count, setCount] = useState(0)
 
   return (
-    // <div>
-    //   <Signup />
-    // </div>
-    //To make two diffrent pages
-
     <BrowserRouter>
       <Routes>
+        {/* Public Routes */}
+        <Route path='/' element={<LandingPage />}></Route>
         <Route path='/register' element={<Signup />}></Route>
         <Route path='/login' element={<Login />}></Route>
+        
+        {/* Protected Routes (require login) */}
         <Route path="/home" element={<Home />}></Route>
-        <Route path="/" element={<Login />}></Route>
+        <Route path="/profile" element={<Profile />}></Route>
       </Routes>
     </BrowserRouter>
   ) 

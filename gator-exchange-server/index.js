@@ -7,6 +7,7 @@ const usersModel = require("./models/users")
 const connect = require("./connect")
 const posts = require("./postRoutes")
 const itemRoutes = require("./itemRoutes")
+const profileRoutes = require("./profileRoutes")
 require("dotenv").config({path: "./config.env"})
 
 const app = express()
@@ -66,8 +67,9 @@ async function sendVerificationEmail(email, token, name) {
 
 mongoose.connect(process.env.ATLAS_URI)
 
-// Use item routes
+// Use routes
 app.use('/api/items', itemRoutes)
+app.use('/profile', profileRoutes)
 
 app.post("/login", async (req, res) => {
     const {email, password} = req.body;
@@ -138,7 +140,7 @@ app.post("/register", async (req, res) => {
             })
         }
 
-        // Check to see if UF emai, only allow ufl. 
+        // Check to see if UF email, only allow ufl. 
         if (!isValidUFLEmail(email)) {
             return res.status(400).json({
                 success: false,
@@ -225,7 +227,7 @@ app.get("/verify/:token", async (req, res) => {
         
         console.log("User verified successfully:", user.email)
         
-        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:3000'
+        const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173'
         
         res.send(`
             <html>
