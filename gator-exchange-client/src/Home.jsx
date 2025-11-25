@@ -4,7 +4,7 @@ import ItemListing from './ItemListing'
 import ItemEdit from './ItemEdit'
 import ItemCard from './ItemCard'
 import { useLocation, useNavigate } from 'react-router-dom'
-import { User, LogOut, Plus, Menu } from 'lucide-react'
+import { User, LogOut, Plus, Menu, MessageSquare } from 'lucide-react'
 
 function Home() {
     const [showModal, setShowModal] = useState(false)
@@ -15,6 +15,7 @@ function Home() {
     const [userEmail, setUserEmail] = useState('')
     const [userName, setUserName] = useState('')
     const [showDropdown, setShowDropdown] = useState(false)
+    const [unreadCount, setUnreadCount] = useState(0)
     
     const location = useLocation()
     const navigate = useNavigate()
@@ -35,6 +36,14 @@ function Home() {
             localStorage.setItem('userName', name)
         }
         fetchItems()
+        fetchUnreadMessages(email)
+        
+        // Poll for new messages every 30 seconds
+        const interval = setInterval(() => {
+            fetchUnreadMessages(email)
+        }, 30000)
+        
+        return () => clearInterval(interval)
     }, [location, navigate])
 
     const fetchItems = async () => {
@@ -45,6 +54,21 @@ function Home() {
             console.error('Error fetching items:', error)
         } finally {
             setLoading(false)
+        }
+    }
+
+    const fetchUnreadMessages = async (email) => {
+        try {
+            const response = await axios.get(`http://localhost:3001/api/messages/conversations/${email}`)
+            if (response.data.success) {
+                const totalUnread = response.data.conversations.reduce(
+                    (sum, conv) => sum + conv.unreadCount, 
+                    0
+                )
+                setUnreadCount(totalUnread)
+            }
+        } catch (error) {
+            console.error('Error fetching unread messages:', error)
         }
     }
 
@@ -117,6 +141,24 @@ function Home() {
                             List an Item
                         </button>
                         
+                        {/* Messages Button with Badge */}
+                        <button
+                            className="btn btn-outline-primary position-relative"
+                            onClick={() => navigate('/messages')}
+                            style={{ borderColor: '#0021A5', color: '#0021A5' }}
+                        >
+                            <MessageSquare size={20} />
+                            {unreadCount > 0 && (
+                                <span 
+                                    className="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                                    style={{ fontSize: '0.7rem' }}
+                                >
+                                    {unreadCount}
+                                    <span className="visually-hidden">unread messages</span>
+                                </span>
+                            )}
+                        </button>
+                        
                         <div className="dropdown">
                             <button
                                 className="btn btn-outline-secondary d-flex align-items-center"
@@ -145,6 +187,20 @@ function Home() {
                                     >
                                         <User size={16} className="me-2" />
                                         My Profile
+                                    </a>
+                                    <a 
+                                        className="dropdown-item d-flex align-items-center" 
+                                        href="#" 
+                                        onClick={(e) => {
+                                            e.preventDefault()
+                                            navigate('/messages')
+                                        }}
+                                    >
+                                        <MessageSquare size={16} className="me-2" />
+                                        Messages
+                                        {unreadCount > 0 && (
+                                            <span className="badge bg-danger ms-2">{unreadCount}</span>
+                                        )}
                                     </a>
                                     <hr className="dropdown-divider" />
                                     <a 
