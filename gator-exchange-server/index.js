@@ -8,6 +8,7 @@ const connect = require("./connect")
 const posts = require("./postRoutes")
 const itemRoutes = require("./itemRoutes")
 const profileRoutes = require("./profileRoutes")
+const messageRoutes = require("./messageRoutes")
 require("dotenv").config({path: "./config.env"})
 
 const app = express()
@@ -70,6 +71,7 @@ mongoose.connect(process.env.ATLAS_URI)
 // Use routes
 app.use('/api/items', itemRoutes)
 app.use('/profile', profileRoutes)
+app.use('/api/messages', messageRoutes)
 
 app.post("/login", async (req, res) => {
     const {email, password} = req.body;
