@@ -36,18 +36,19 @@ function generateVerificationToken() {
 }
 
 // Send verification email
-async function sendVerificationEmail(email, token, name) {
+async function sendVerificationEmail(email, token, name, isOrganization) {
     const baseUrl = process.env.BASE_URL || 'http://localhost:3001'
     const verificationUrl = `${baseUrl}/verify/${token}`
-    
+    const accountType = isOrganization ? 'Organization' : 'UFL'
+
     const mailOptions = {
         from: process.env.EMAIL_USER,
         to: email,
-        subject: 'Verify Your UFL Account',
+        subject: `Verify Your ${accountType} Account`,
         html: `
             <h1>Welcome ${name}!</h1>
             <h2>Email Verification Required</h2>
-            <p>Thank you for registering with your UFL email.</p>
+            <p>Thank you for registering${isOrganization ? ' your organization' : ' with your UFL email'}.</p>
             <p>Please click the link below to verify your GatorMail address:</p>
             <a href="${verificationUrl}" style="display: inline-block; padding: 10px 20px; background-color: #FA4616; color: white; text-decoration: none; border-radius: 5px;">Verify Email</a>
             <p>Or copy and paste this link into your browser:</p>
@@ -74,18 +75,28 @@ app.use('/profile', profileRoutes)
 app.use('/api/messages', messageRoutes)
 
 app.post("/login", async (req, res) => {
-    const {email, password} = req.body;
+    const {email, password, name} = req.body;
 
     try {
+        const user = await usersModel.findOne({email: email})
         // Validate UFL email
-        if (!isValidUFLEmail(email)) {
-            return res.status(400).json({
+
+        if(!user) {
+            return res.status(404).json({
                 success: false,
-                message: "Only @ufl.edu email addresses are allowed"
+                message: "No account found with this email"
             })
         }
 
-        const user = await usersModel.findOne({email: email})
+
+        if (!user.isOrganization && !isValidUFLEmail(email)) {
+            return res.status(400).json({
+                success: false,
+                message: "Student accounts must use @ufl.edu email addresses"
+            })
+        }
+
+
         
         if(!user) {
             return res.status(404).json({
@@ -110,7 +121,8 @@ app.post("/login", async (req, res) => {
                 user: {
                     id: user._id,
                     name: user.name,
-                    email: user.email
+                    email: user.email,
+                    isOrganization: user.isOrganization  
                 }
             })
         } else {
@@ -132,7 +144,7 @@ app.post("/register", async (req, res) => {
     console.log("Registration attempt:", req.body)
     
     try {
-        const {email, password, name} = req.body
+        const {email, password, name, isOrganization} = req.body
 
         // Validate required fields
         if (!email || !password || !name) {
@@ -142,8 +154,8 @@ app.post("/register", async (req, res) => {
             })
         }
 
-        // Check to see if UF email, only allow ufl. 
-        if (!isValidUFLEmail(email)) {
+        // Check to see if UF email, only allow ufl/clicked they are an org
+        if (!isOrganization && !isValidUFLEmail(email)) {
             return res.status(400).json({
                 success: false,
                 message: "Only @ufl.edu email addresses are allowed. Please use your GatorMail."
@@ -175,22 +187,29 @@ app.post("/register", async (req, res) => {
             name: name,
             email: email.toLowerCase(),
             password: password, 
+            isOrganization: isOrganization || false,
             isVerified: false,
             verificationToken: verificationToken,
             verificationExpires: verificationExpires
         }
         
         const user = await usersModel.create(userData)
-        console.log("User created successfully:", user.email)
+        console.log("User created successfully:", user.email, "Organization:", user.isOrganization)
         
         // Send verification email
-        await sendVerificationEmail(user.email, verificationToken, user.name)
+        await sendVerificationEmail(user.email, verificationToken, user.name, user.isOrganization)
         
+        const emailMessage = isOrganization 
+            ? "Registration successful! Please check your email to verify your organization account."
+            : "Registration successful! Please check your GatorMail (@ufl.edu) to verify your account."
+        
+
         res.status(201).json({
             success: true,
-            message: "Registration successful! Please check your GatorMail (@ufl.edu) to verify your account.",
+            message: emailMessage,
             email: user.email
         })
+
     } catch(err) {
         console.error("Registration error:", err)
         res.status(500).json({
@@ -259,14 +278,7 @@ app.post("/resend-verification", async (req, res) => {
     const {email} = req.body
     
     try {
-        // Validate UFL email
-        if (!isValidUFLEmail(email)) {
-            return res.status(400).json({
-                success: false,
-                message: "Only @ufl.edu email addresses are allowed"
-            })
-        }
-
+    
         const user = await usersModel.findOne({email: email.toLowerCase()})
         
         if(!user) {
@@ -275,6 +287,14 @@ app.post("/resend-verification", async (req, res) => {
                 message: "No account found with this email"
             })
         }
+
+        if (!user.isOrganization && !isValidUFLEmail(email)) {
+            return res.status(400).json({
+                success: false,
+                message: "Student accounts must use @ufl.edu email addresses"
+            })
+        }
+        
         
         if(user.isVerified) {
             return res.json({
@@ -290,7 +310,7 @@ app.post("/resend-verification", async (req, res) => {
         await user.save()
         
         // Send new verification email
-        await sendVerificationEmail(user.email, verificationToken, user.name)
+        await sendVerificationEmail(user.email, verificationToken, user.name, user.isOrganization)
         
         res.json({
             success: true,
