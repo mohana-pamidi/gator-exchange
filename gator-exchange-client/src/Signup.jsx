@@ -7,6 +7,7 @@ function Signup() {
     const [name, setName] = useState('')
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    const [isOrganization, setIsOrganization] = useState(false)
     const [error, setError] = useState('')
     const [success, setSuccess] = useState('')
     const [showResend, setShowResend] = useState(false)
@@ -21,12 +22,13 @@ function Signup() {
         setResendMessage('')
 
         // Client-side validation for UFL email
-        if (!email.endsWith('@ufl.edu')) {
+        // Don't need to have ufl email adress if organization
+        if (!isOrganization && !email.endsWith('@ufl.edu')) {
             setError('Please use your UFL GatorMail (@ufl.edu)')
             return
         }
 
-        axios.post('http://localhost:3001/register', {name, email, password})
+        axios.post('http://localhost:3001/register', {name, email, password, isOrganization})
         .then(result => {
             console.log(result)
             if (result.data.success) {
@@ -72,13 +74,28 @@ function Signup() {
             <div className="bg-white p-3 rounded" style={{ width: '400px' }}>
                 <h2>Register</h2>
                 <form onSubmit={handleSubmit}>
+
+                    <div className="mb-3 form-check">
+                        <input
+                            type="checkbox"
+                            className="form-check-input"
+                            id="isOrganization"
+                            checked={isOrganization}
+                            onChange={(e) => setIsOrganization(e.target.checked)}
+                        />
+                        <label className="form-check-label" htmlFor="isOrganization">
+                            <strong>I am registering as a campus organization</strong>
+                        </label>
+                    </div>
+
+
                     <div className="mb-3">
                         <label htmlFor="Name">
-                            <strong>Name</strong>
+                            <strong>{isOrganization ? 'Organization Name' : 'Name'}</strong>
                         </label>
                         <input
                             type="text"
-                            placeholder="Enter Name"
+                            placeholder={isOrganization ? "Enter Organization Name" : "Enter Name"}
                             autoComplete="off"
                             name="Name"
                             className="form-control rounded-0"
@@ -89,18 +106,20 @@ function Signup() {
 
                     <div className="mb-3">
                         <label htmlFor="Email">
-                            <strong>UFL Email</strong>
+                            <strong>{isOrganization ? 'Organization Email' : 'UFL Email'}</strong>
                         </label>
                         <input
                             type="email"
-                            placeholder="yourname@ufl.edu"
+                            placeholder={isOrganization ? "organization@example.com" : "yourname@ufl.edu"}
                             autoComplete="off"
                             name="email"
                             className="form-control rounded-0"
                             onChange={(e) => setEmail(e.target.value)}
                             required
                         />
-                        <small className="text-muted">Must be a @ufl.edu email address</small>
+                        {!isOrganization && (
+                            <small className="text-muted">Must be a @ufl.edu email address</small>
+                        )}
                     </div>
 
                     <div className="mb-3">
