@@ -32,7 +32,16 @@ const usersSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         default: Date.now
-    }
+    },
+    averageRating: {
+        type: Number,
+        default: 0
+    },
+    ratingCount: {
+        type: Number,
+        default: 0
+    },
+
 })
 
 const usersModel = mongoose.model("users", usersSchema)
