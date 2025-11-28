@@ -35,3 +35,12 @@ export const getItemRatings = async (listingId) => {
         throw err.response ? err.response.data : { msg: "Network Error" };
     }
 };
+
+export const getUserInfo = async (userId) => {
+    try {
+        const response = await axios.get(`http://localhost:3001/api/ratings/user-info/${userId}`);
+        return response.data;
+    } catch (err) {
+        throw err.response ? err.response.data : { msg: "Network Error" };
+    }
+};

@@ -69,6 +69,33 @@ router.post('/', auth, async (req, res) => {
     }
 });
 
+
+router.get('/user/:userId', async (req, res) => {
+    try {
+        const { userId } = req.params;
+        const ratings = await Rating.find({ reviewee: userId })
+            .populate('reviewer', 'name')
+            .populate('listing', 'name') 
+            .sort({ createdAt: -1 });
+
+        res.json(ratings);
+    } catch (err) {
+        console.error('Error fetching user ratings:', err);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
+router.get('/user-info/:userId', async (req, res) => {
+    try {
+        const user = await User.findById(req.params.userId).select('-password');
+        if (!user) return res.status(404).json({ msg: 'User not found' });
+        res.json(user);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send('Server Error');
+    }
+});
+
 router.get('/listing/:listingId', async (req, res) => {
     try {
         const ratings = await Rating.find({ listing: req.params.listingId })

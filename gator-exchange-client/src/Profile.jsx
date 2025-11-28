@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react'
 import axios from 'axios'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { User, Mail, Lock, ArrowLeft, Save, Edit, X, Star } from 'lucide-react'
-import { getUserRatings } from "./api/ratings";
+import { getUserRatings, getUserInfo } from './api/ratings'
 
 function Profile() {
+    const navigate = useNavigate()
+    const { userId: routeUserId } = useParams()
+
     const [userData, setUserData] = useState({
         name: '',
         email: '',
@@ -13,61 +16,54 @@ function Profile() {
     })
     
     const [ratings, setRatings] = useState([])
+    const [loading, setLoading] = useState(true)
+    
     const [editMode, setEditMode] = useState(false)
     const [showPassword, setShowPassword] = useState(false)
     const [newPassword, setNewPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
     const [error, setError] = useState('')
     const [success, setSuccess] = useState('')
-    const [loading, setLoading] = useState(false)
+    const [saveLoading, setSaveLoading] = useState(false)
     
-    const navigate = useNavigate()
+    const loggedInUserId = localStorage.getItem('userId')
+    const targetUserId = routeUserId || loggedInUserId
+    const isOwnProfile = targetUserId === loggedInUserId
 
     useEffect(() => {
-        const fetchProfileData = async () => {
-            const email = localStorage.getItem('userEmail')
-            const name = localStorage.getItem('userName')
-            const userId = localStorage.getItem('userId') 
-
-            if (!email) {
+        const loadData = async () => {
+            if (!targetUserId) {
                 navigate('/login')
                 return
             }
-            
-            setUserData(prev => ({
-                ...prev,
-                name: name || '',
-                email: email || ''
-            }))
 
-            if (userId) {
-                try {
-                    const ratingsData = await getUserRatings(userId)
-                    setRatings(ratingsData)
+            try {
+                setLoading(true)
+                
+                const userInfo = await getUserInfo(targetUserId)
+                setUserData({
+                    name: userInfo.name,
+                    email: userInfo.email,
+                    averageRating: userInfo.averageRating || 0,
+                    ratingCount: userInfo.ratingCount || 0
+                })
 
-                    if (ratingsData.length > 0) {
-                        const count = ratingsData.length
-                        const total = ratingsData.reduce((acc, curr) => acc + curr.rating, 0)
-                        setUserData(prev => ({
-                            ...prev,
-                            ratingCount: count,
-                            averageRating: (total / count)
-                        }))
-                    }
-                } catch (err) {
-                    console.error(err)
-                }
+                const ratingsData = await getUserRatings(targetUserId)
+                setRatings(ratingsData)
+
+            } catch (err) {
+                console.error(err)
+                setError("Failed to load user data")
+            } finally {
+                setLoading(false)
             }
         }
 
-        fetchProfileData()
-    }, [navigate])
+        loadData()
+    }, [targetUserId, navigate])
 
     const handleInputChange = (e) => {
-        setUserData({
-            ...userData,
-            [e.target.name]: e.target.value
-        })
+        setUserData({ ...userData, [e.target.name]: e.target.value })
     }
 
     const handleEditClick = () => {
@@ -77,82 +73,50 @@ function Profile() {
     }
 
     const handleCancelClick = () => {
-        const email = localStorage.getItem('userEmail')
-        const name = localStorage.getItem('userName')
-        setUserData(prev => ({
-            ...prev,
-            name: name || '',
-            email: email || ''
-        }))
+        setEditMode(false)
         setNewPassword('')
         setConfirmPassword('')
-        setEditMode(false)
         setError('')
         setSuccess('')
     }
-
+    
     const handleSaveClick = async () => {
+        setSaveLoading(true)
         setError('')
         setSuccess('')
-        setLoading(true)
-
-        if (newPassword || confirmPassword) {
-            if (newPassword !== confirmPassword) {
-                setError('Passwords do not match')
-                setLoading(false)
-                return
-            }
-            if (newPassword.length < 6) {
-                setError('Password must be at least 6 characters long')
-                setLoading(false)
-                return
-            }
-        }
-
         try {
-            const updateData = {
-                email: userData.email,
-                name: userData.name
-            }
-            if (newPassword && newPassword.trim() !== '') {
-                updateData.password = newPassword
-            }
+            if (newPassword && newPassword !== confirmPassword) throw new Error("Passwords don't match")
+            
+            const updateData = { email: userData.email, name: userData.name }
+            if (newPassword) updateData.password = newPassword
 
-            const response = await axios.put(
-                'http://localhost:3001/profile/update', 
-                updateData,
-                { headers: { 'Content-Type': 'application/json' } }
-            )
-
-            if (response.data.success) {
-                localStorage.setItem('userName', userData.name)
-                setSuccess('Profile updated successfully!')
-                setEditMode(false)
-                setNewPassword('')
-                setConfirmPassword('')
-                setTimeout(() => setSuccess(''), 3000)
-            }
+            await axios.put('http://localhost:3001/profile/update', updateData, { 
+                headers: { 'Content-Type': 'application/json' } 
+            })
+            
+            if (isOwnProfile) localStorage.setItem('userName', userData.name)
+            
+            setSuccess('Profile updated!')
+            setEditMode(false)
+            setNewPassword('')
+            setConfirmPassword('')
         } catch (err) {
-            setError(err.response?.data?.message || 'Failed to update profile.')
+            setError(err.message || err.response?.data?.message || 'Update failed')
         } finally {
-            setLoading(false)
+            setSaveLoading(false)
         }
     }
+
+    if (loading) return <div className="p-5 text-center">Loading Profile...</div>
 
     return (
         <div style={{ minHeight: '100vh', backgroundColor: '#f8f9fa' }}>
             <nav className="navbar navbar-dark" style={{ backgroundColor: '#0021A5' }}>
                 <div className="container">
-                    <button 
-                        className="btn btn-outline-light"
-                        onClick={() => navigate('/home')}
-                    >
-                        <ArrowLeft size={20} className="me-2" />
-                        Back to Home
+                    <button className="btn btn-outline-light" onClick={() => navigate('/home')}>
+                        <ArrowLeft size={20} className="me-2" /> Back to Home
                     </button>
-                    <span className="navbar-brand fw-bold">
-                        <span style={{ color: '#FA4616' }}>Gator</span> Exchange
-                    </span>
+                    <span className="navbar-brand fw-bold"><span style={{ color: '#FA4616' }}>Gator</span> Exchange</span>
                 </div>
             </nav>
 
@@ -166,7 +130,7 @@ function Profile() {
                                          style={{ width: '100px', height: '100px', backgroundColor: '#0021A5', color: 'white' }}>
                                         <User size={48} />
                                     </div>
-                                    <h2 className="fw-bold mb-1">My Profile</h2>
+                                    <h2 className="fw-bold mb-1">{userData.name}</h2>
                                     
                                     <div className="mt-2">
                                         {userData.ratingCount > 0 ? (
@@ -175,7 +139,7 @@ function Profile() {
                                                 <strong>{userData.averageRating.toFixed(1)}</strong> ({userData.ratingCount} reviews)
                                             </span>
                                         ) : (
-                                            <span className="text-muted small">No ratings yet</span>
+                                            <span className="text-muted small">(No ratings yet)</span>
                                         )}
                                     </div>
                                 </div>
@@ -186,61 +150,60 @@ function Profile() {
                                 <div>
                                     <div className="mb-4">
                                         <label className="form-label fw-semibold"><User size={16} className="me-2" />Full Name</label>
-                                        <input type="text" className="form-control form-control-lg" name="name" value={userData.name} onChange={handleInputChange} disabled={!editMode} style={editMode ? {} : { backgroundColor: '#f8f9fa' }} />
+                                        <input type="text" className="form-control form-control-lg" name="name" 
+                                            value={userData.name} 
+                                            onChange={handleInputChange} 
+                                            disabled={!editMode} 
+                                            style={editMode ? {} : { backgroundColor: '#f8f9fa' }} 
+                                        />
                                     </div>
 
                                     <div className="mb-4">
-                                        <label className="form-label fw-semibold"><Mail size={16} className="me-2" />UFL Email</label>
-                                        <input type="email" className="form-control form-control-lg" value={userData.email} disabled style={{ backgroundColor: '#e9ecef', cursor: 'not-allowed' }} />
+                                        <label className="form-label fw-semibold"><Mail size={16} className="me-2" />Email</label>
+                                        <input type="email" className="form-control form-control-lg" 
+                                            value={userData.email} 
+                                            disabled 
+                                            style={{ backgroundColor: '#e9ecef' }} 
+                                        />
                                     </div>
 
-                                    {editMode && (
+                                    {isOwnProfile && (
                                         <>
-                                            <hr className="my-4" />
-                                            <h5 className="mb-3 fw-semibold">Change Password</h5>
-                                            <div className="mb-3">
-                                                <input type={showPassword ? "text" : "password"} className="form-control" placeholder="New Password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
-                                            </div>
-                                            <div className="mb-4">
-                                                <input type={showPassword ? "text" : "password"} className="form-control" placeholder="Confirm Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+                                            {editMode && (
+                                                <>
+                                                    <hr className="my-4" />
+                                                    <h5 className="mb-3 fw-semibold">Change Password</h5>
+                                                    <div className="mb-3">
+                                                        <input type={showPassword ? "text" : "password"} className="form-control" placeholder="New Password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+                                                    </div>
+                                                    <div className="mb-4">
+                                                        <input type={showPassword ? "text" : "password"} className="form-control" placeholder="Confirm Password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+                                                    </div>
+                                                </>
+                                            )}
+
+                                            <div className="d-grid gap-2">
+                                                {!editMode ? (
+                                                    <button className="btn btn-lg" style={{ backgroundColor: '#FA4616', color: 'white' }} onClick={handleEditClick}>
+                                                        <Edit size={20} className="me-2" /> Edit Profile
+                                                    </button>
+                                                ) : (
+                                                    <>
+                                                        <button className="btn btn-lg" style={{ backgroundColor: '#0021A5', color: 'white' }} onClick={handleSaveClick} disabled={saveLoading}>
+                                                            <Save size={20} className="me-2" /> Save Changes
+                                                        </button>
+                                                        <button className="btn btn-outline-secondary btn-lg" onClick={handleCancelClick} disabled={saveLoading}>
+                                                            <X size={20} className="me-2" /> Cancel
+                                                        </button>
+                                                    </>
+                                                )}
                                             </div>
                                         </>
                                     )}
-
-                                    <div className="d-grid gap-2">
-                                        {!editMode ? (
-                                            <button className="btn btn-lg" style={{ backgroundColor: '#FA4616', color: 'white' }} onClick={handleEditClick}>
-                                                <Edit size={20} className="me-2" /> Edit Profile
-                                            </button>
-                                        ) : (
-                                            <>
-                                                <button className="btn btn-lg" style={{ backgroundColor: '#0021A5', color: 'white' }} onClick={handleSaveClick} disabled={loading}>
-                                                    <Save size={20} className="me-2" /> Save Changes
-                                                </button>
-                                                <button className="btn btn-outline-secondary btn-lg" onClick={handleCancelClick} disabled={loading}>
-                                                    <X size={20} className="me-2" /> Cancel
-                                                </button>
-                                            </>
-                                        )}
-                                    </div>
                                 </div>
 
                                 <div className="mt-5 pt-4 border-top">
-                                    <h6 className="text-muted mb-3">Account Information</h6>
-                                    <div className="row g-3">
-                                        <div className="col-6">
-                                            <small className="text-muted d-block">Account Type</small>
-                                            <strong>UFL Student</strong>
-                                        </div>
-                                        <div className="col-6">
-                                            <small className="text-muted d-block">Status</small>
-                                            <span className="badge bg-success">Verified</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div className="mt-5 pt-4 border-top">
-                                    <h5 className="mb-3 fw-bold">Recent Reviews</h5>
+                                    <h5 className="mb-3 fw-bold">Reviews</h5>
                                     {ratings.length > 0 ? (
                                         <div className="d-flex flex-column gap-3">
                                             {ratings.map((review) => (
@@ -249,31 +212,32 @@ function Profile() {
                                                         <div>
                                                             <div className="d-flex align-items-center mb-1">
                                                                 {[...Array(5)].map((_, i) => (
-                                                                    <Star 
-                                                                        key={i} 
-                                                                        size={14} 
-                                                                        fill={i < review.rating ? "#f39c12" : "none"} 
-                                                                        stroke={i < review.rating ? "#f39c12" : "#ccc"}
-                                                                    />
+                                                                    <Star key={i} size={14} fill={i < review.rating ? "#f39c12" : "none"} stroke={i < review.rating ? "#f39c12" : "#ccc"} />
                                                                 ))}
                                                             </div>
-                                                            <p className="mb-1 small fw-bold">{review.listing?.title || "Item"}</p>
+                                                            <p className="mb-1 small fw-bold">
+                                                                {review.listing ? (
+                                                                    <span 
+                                                                        onClick={() => navigate(`/item/${review.listing._id}`)}
+                                                                        style={{ cursor: 'pointer', color: '#0021A5', textDecoration: 'underline' }}
+                                                                    >
+                                                                        {review.listing.name}
+                                                                    </span>
+                                                                ) : (
+                                                                    "Item (Deleted)"
+                                                                )}
+                                                            </p>           
                                                             <p className="mb-1 text-muted small">"{review.comment}"</p>
                                                         </div>
-                                                        <small className="text-muted fst-italic">
-                                                            - {review.reviewer?.name || "User"}
-                                                        </small>
+                                                        <small className="text-muted fst-italic">- {review.reviewer?.name || "User"}</small>
                                                     </div>
                                                 </div>
                                             ))}
                                         </div>
                                     ) : (
-                                        <p className="text-muted fst-italic text-center py-3">
-                                            You haven't received any reviews yet.
-                                        </p>
+                                        <p className="text-muted fst-italic text-center py-3">No reviews yet.</p>
                                     )}
                                 </div>
-
                             </div>
                         </div>
                     </div>

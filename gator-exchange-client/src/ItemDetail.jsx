@@ -171,7 +171,12 @@ function ItemDetail() {
                             <div className="mb-3">
                                 <h5>Owner</h5>
                                 <p className="card-text">
-                                    <strong>{item.ownerName || 'Unknown'}</strong>
+                                    <span 
+                                        onClick={() => navigate(`/profile/${item.owner._id}`)} 
+                                        style={{ cursor: 'pointer', textDecoration: 'underline', color: '#0021A5' }}
+                                    >
+                                        <strong>{item.ownerName || 'Unknown'}</strong>
+                                    </span>
                                     
                                     {item.owner && item.owner.ratingCount > 0 ? (
                                         <span className="ms-2">
@@ -254,7 +259,18 @@ function ItemDetail() {
                                         <div key={review._id} className="list-group-item px-0 py-3">
                                             <div className="d-flex justify-content-between align-items-center mb-2">
                                                 <div className="d-flex align-items-center">
-                                                    <div className="fw-bold me-2">{review.reviewer?.name || 'User'}</div>
+                                                    <div 
+                                                        className="fw-bold me-2"
+                                                        onClick={() => review.reviewer && navigate(`/profile/${review.reviewer._id}`)}
+                                                        style={{ 
+                                                            cursor: review.reviewer ? 'pointer' : 'default',
+                                                            color: review.reviewer ? '#0021A5' : 'inherit',
+                                                            textDecoration: review.reviewer ? 'underline' : 'none'
+                                                        }}
+                                                    >
+                                                        {review.reviewer?.name || 'User'}
+                                                    </div>
+                                                    
                                                     <div className="d-flex">
                                                         {[...Array(5)].map((_, i) => (
                                                             <Star 

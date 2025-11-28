@@ -25,7 +25,8 @@ function App() {
         
         {/* Protected Routes (require login) */}
         <Route path="/home" element={<Home />}></Route>
-        <Route path="/profile" element={<Profile />}></Route>
+        <Route path="/profile" element={<Profile />} />
+        <Route path="/profile/:userId" element={<Profile />} />
         <Route path="/item/:id" element={<ItemDetail />}></Route>
         <Route path="/messages" element={<Messages />}></Route>
         <Route path="/" element={<Login />}></Route>
