@@ -79,7 +79,10 @@ router.post('/create', upload.array('images', 10), async (req, res) => {
 // get all items (must come before id route)
 router.get('/all', async (req, res) => {
     try {
-        const items = await itemModel.find().sort({ createdAt: -1 })
+        const items = await itemModel.find()
+            .populate('owner', 'name averageRating ratingCount') // Populate owner details
+            .sort({ createdAt: -1 });
+            
         res.json(items)
     } catch (error) {
         console.error('Error fetching items:', error)
@@ -232,7 +235,7 @@ router.delete('/:id', async (req, res) => {
 router.get('/:id', async (req, res) => {
     try {
         const { id } = req.params
-        const item = await itemModel.findById(id)
+        const item = await itemModel.findById(id).populate('owner', 'name averageRating ratingCount')
         if (!item) {
             return res.status(404).json({ error: 'Item not found' })
         }

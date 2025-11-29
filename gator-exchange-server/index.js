@@ -9,6 +9,8 @@ const posts = require("./postRoutes")
 const itemRoutes = require("./itemRoutes")
 const profileRoutes = require("./profileRoutes")
 const messageRoutes = require("./messageRoutes")
+const ratingRoutes = require("./ratingRoutes")
+const jwt = require('jsonwebtoken');
 require("dotenv").config({path: "./config.env"})
 
 const app = express()
@@ -73,6 +75,7 @@ mongoose.connect(process.env.ATLAS_URI)
 app.use('/api/items', itemRoutes)
 app.use('/profile', profileRoutes)
 app.use('/api/messages', messageRoutes)
+app.use('/api/ratings', ratingRoutes)
 
 app.post("/login", async (req, res) => {
     const {email, password, name} = req.body;
@@ -115,9 +118,21 @@ app.post("/login", async (req, res) => {
         }
         
         if(user.password === password) {
+            const payload = {
+                user: {
+                    id: user._id
+                }
+            };
+
+            const token = jwt.sign(
+                payload, 
+                process.env.JWT_SECRET || 'mysecrettoken', 
+                { expiresIn: '1h' }
+            );
             res.json({
                 success: true,
                 message: "Login successful",
+                token: token,
                 user: {
                     id: user._id,
                     name: user.name,

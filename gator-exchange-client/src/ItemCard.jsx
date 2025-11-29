@@ -48,6 +48,20 @@ function ItemCard({ item, userEmail, onEdit, onDelete }) {
             )}
             <div className="card-body d-flex flex-column">
                 <h5 className="card-title">{item.name}</h5>
+                
+                {/* Owner Rating */}
+                <div className="mb-2">
+                    {item.owner && item.owner.ratingCount > 0 ? (
+                        <small className="text-muted">
+                            ⭐ {item.owner.averageRating.toFixed(1)} ({item.owner.ratingCount} ratings)
+                        </small>
+                    ) : (
+                        <small className="text-muted">
+                            No ratings yet
+                        </small>
+                    )}
+                </div>
+
                 <p className="card-text flex-grow-1">{item.description}</p>
                 <div className="mt-auto">
                     <p className="card-text">

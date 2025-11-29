@@ -3,12 +3,13 @@ import { Link } from "react-router-dom";
 import axios from 'axios'
 import { useNavigate } from 'react-router-dom'
 import { Eye, EyeOff } from 'lucide-react';
+
 function Login() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
     const [error, setError] = useState('')
     const [showResend, setShowResend] = useState(false)
-    const [showPassword, setShowPassword] = useState(false)                     
+    const [showPassword, setShowPassword] = useState(false)                    
     const [resendMessage, setResendMessage] = useState('')
     const navigate = useNavigate()
 
@@ -22,8 +23,21 @@ function Login() {
         .then(result => {
             console.log(result)
             if (result.data.success) {
-                // Store user data in localStorage
-                localStorage.setItem('user', JSON.stringify(result.data.user))
+                // --- NEW: Save Token and User ID ---
+                // 1. Save the Token (Required for leaving reviews)
+                localStorage.setItem('token', result.data.token);
+
+                // 2. Save the User ID (Required to check if you are the owner)
+                // We check ._id first (standard MongoDB), fallback to .id just in case
+                const userId = result.data.user._id || result.data.user.id;
+                localStorage.setItem('userId', userId);
+                
+                // 3. Save other details (Keep your existing logic)
+                localStorage.setItem('userEmail', result.data.user.email);
+                localStorage.setItem('userName', result.data.user.name);
+                localStorage.setItem('user', JSON.stringify(result.data.user));
+                // ------------------------------------
+
                 navigate('/home', { 
                     state: { 
                         email: result.data.user.email,
