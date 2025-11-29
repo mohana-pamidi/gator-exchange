@@ -177,6 +177,7 @@ function ItemDetail() {
                                     >
                                         <strong>{item.ownerName || 'Unknown'}</strong>
                                     </span>
+
                                     
                                     {item.owner && item.owner.ratingCount > 0 ? (
                                         <span className="ms-2">
@@ -191,7 +192,9 @@ function ItemDetail() {
                                     )}
                                     
                                     <br />
-                                    <small className="text-muted">{item.ownerEmail}</small>
+                                    <strong> {item.owner.isOrganization ? 'Organization' : 'UFL Student'}</strong>
+                                    <br />
+                                    <small> {item.ownerEmail}</small>
                                 </p>
                             </div>
 
