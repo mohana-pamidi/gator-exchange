@@ -12,7 +12,8 @@ function Profile() {
         name: '',
         email: '',
         averageRating: 0,
-        ratingCount: 0
+        ratingCount: 0,
+        isOrganization: false
     })
     
     const [ratings, setRatings] = useState([])
@@ -45,7 +46,8 @@ function Profile() {
                     name: userInfo.name,
                     email: userInfo.email,
                     averageRating: userInfo.averageRating || 0,
-                    ratingCount: userInfo.ratingCount || 0
+                    ratingCount: userInfo.ratingCount || 0,
+                    isOrganization: userInfo.isOrganization || false
                 })
 
                 const ratingsData = await getUserRatings(targetUserId)
@@ -202,6 +204,22 @@ function Profile() {
                                     )}
                                 </div>
 
+                                {/* Account Info */}
+                                <div className="mt-5 pt-4 border-top">
+                                    <h5 className="mb-3 fw-bold">Account Information</h5>
+                                    <div className="row g-3">
+                                        <div className="col-6">
+                                            <small className="text-muted d-block">Account Type</small>
+                                            <strong>{userData.isOrganization ? 'Organization' : 'UFL Student'}</strong>
+                                        </div>
+                                        <div className="col-6">
+                                            <small className="text-muted d-block">Status</small>
+                                            <span className="badge bg-success">Verified</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* User Reviews */}
                                 <div className="mt-5 pt-4 border-top">
                                     <h5 className="mb-3 fw-bold">Reviews</h5>
                                     {ratings.length > 0 ? (
