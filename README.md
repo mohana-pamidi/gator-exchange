@@ -19,17 +19,15 @@
 *** https://www.markdownguide.org/basic-syntax/#reference-style-links
 -->
 
-[![Contributors][contributors-shield]][contributors-url] [![Issues][issues-shield]][issues-url]
-
 <!-- [![Stargazers][stars-shield]][stars-url] -->
 
 <!-- PROJECT LOGO -->
 <br />
 <div align="center">
-  <!-- <a href="https://github.com/github_username/repo_name">
-    <img src="images/logo.png" alt="Logo" width="80" height="80">
-  </a> -->
-
+  <a href="https://github.com/github_username/repo_name">
+    <img width="318" height="75" alt="image" src="https://github.com/user-attachments/assets/e9d5b77b-f5b3-48c1-823d-d53aa8d23bbd" />
+  </a>
+  
 <h3 align="center">Gator Exchange</h3>
 
   <p align="center">
@@ -52,11 +50,9 @@
     <li>
       <a href="#getting-started">Getting Started</a>
       <ul>
-        <li><a href="#prerequisites">Prerequisites</a></li>
         <li><a href="#installation">Installation</a></li>
       </ul>
     </li>
-    <li><a href="#roadmap">Roadmap</a></li>
     <li><a href="#contact">Contact</a></li>
     <li><a href="#acknowledgments">Acknowledgments</a></li>
   </ol>
@@ -87,76 +83,77 @@ Gator Exchange is a MERN stack web application that enables university students 
 
 ## Getting Started
 
-### Prerequisites
-
-<!-- This is an example of how to list things you need to use the software and how to install them. -->
-
-- npm
-
-  ```sh
-  cd gator-exchange-server
-  npm install
-
-  cd ../gator-exchange-client
-  npm install
-  ```
-
 ### Installation
 
-1. Get a free Atlas URI: https://www.mongodb.com/products/platform/atlas-database
-2. Clone the repo
-   ```sh
-   git clone https://github.com/mohana-pamidi/gator-exchange.git
+#### 1. Repository Setup
+
+Clone the repository:
+
+```sh
+git clone https://github.com/mohana-pamidi/gator-exchange.git
+```
+
+#### 2. Database Setup
+
+Get a free MongoDB Atlas URI at [https://www.mongodb.com/products/platform/atlas-database](https://www.mongodb.com/products/platform/atlas-database)
+
+#### 3. Email Configuration
+
+1. Go to your Google Account Security Settings at [https://myaccount.google.com/security](https://myaccount.google.com/security)
+2. Enable 2-Step Verification (if it's not already enabled)
+3. Search for "App passwords", create a new one named "Gator Exchange", and copy the 16-character code
+
+#### 4. Server Configuration
+
+1. Inside `gator-exchange-server`, create a file named `config.env`
+2. Add your MongoDB database connection string:
    ```
-3. Install NPM packages
-   ```sh
-   npm install
+   ATLAS_URI=your_mongodb_uri
    ```
-4. Enter your URI in `config.env`
-   ```js
-   ATLAS_URI = "ENTER YOUR URI";
+3. Add your email address and 16-character app password:
    ```
-5. Start the server
+   EMAIL_USER=your_email@gmail.com
+   EMAIL_PASSWORD=abcdefghijklmnop
+   ```
+   Note: This is not your regular email password, but the 16-character app password created in step 3.
 
-   ```sh
-   cd gator-exchange-server
-   node index.js
+4. Add the application URLs:
    ```
-
-6. Start the client
-   ```sh
-   cd gator-exchange-client
-   npm run dev
+   BASE_URL=http://localhost:3001
+   FRONTEND_URL=http://localhost:5173
    ```
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
+#### 5. Install Dependencies
 
-<!-- USAGE EXAMPLES -->
+Install the NPM packages in both the client and server:
 
-<!-- ## Usage
+```sh
+cd gator-exchange-client
+npm install
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
+cd ../gator-exchange-server
+npm install
+```
 
-_For more examples, please refer to the [Documentation](https://example.com)_
+#### 6. Start the Application
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p> -->
+Start the server:
 
-<!-- ROADMAP -->
+```sh
+cd gator-exchange-server
+node index.js
+```
 
-## Roadmap
+Start the client (open a new terminal window):
 
-- [x] Set up project structure and MERN stack environment
-- [x] Create user authentication and profile management
-- [ ] Implement basic CRUD functionality for listings
-- [ ] Add search and filtering for equipment listings
-- [ ] Implement direct messaging between users
-- [ ] Add rating and review system for sellers
-- [ ] Improve UI/UX and responsive design
-- [ ] Add admin dashboard for managing users and listings
-- [ ] Conduct testing and bug fixes
-- [ ] Deploy final version to hosting platform
+```sh
+cd gator-exchange-client
+npm run dev
+```
 
-See the [open issues](https://github.com/mohana-pamidi/gator-exchange/issues) for a full list of proposed features (and known issues).
+#### 7. Access the Application
+
+Navigate to the frontend URL in your browser: [http://localhost:5173](http://localhost:5173)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -169,19 +166,21 @@ See the [open issues](https://github.com/mohana-pamidi/gator-exchange/issues) fo
 <!-- CONTACT -->
 
 ## Contact
+<h3>Aanya Bhandari</h3>
 
-<h3>Mohana Pamidimukkala</h3>
-
-[![LinkedIn][linkedin-shield]](https://www.linkedin.com/in/mohana-pamidi/)
+[![LinkedIn][linkedin-shield]](https://www.linkedin.com/in/aanya-bhandari-ny/)
 
 <h3>Kayla Chen</h3>
 
 [![LinkedIn][linkedin-shield]](https://www.linkedin.com/in/kaylachenn/)
 
-<h3>Aanya Bhandari</h3>
+<h3>Avigail Laing</h3>
 
-[![LinkedIn][linkedin-shield]](https://www.linkedin.com/in/aanya-bhandari-ny/)
+[![LinkedIn][linkedin-shield]](https://www.linkedin.com/in/avigail-laing/)
 
+<h3>Mohana Pamidimukkala</h3>
+
+[![LinkedIn][linkedin-shield]](https://www.linkedin.com/in/mohana-pamidi/)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -190,7 +189,6 @@ See the [open issues](https://github.com/mohana-pamidi/gator-exchange/issues) fo
 ## Acknowledgments
 
 - This README was adapted from a template provided by [Best-README-Template](https://github.com/othneildrew/Best-README-Template).
-
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -232,16 +230,3 @@ See the [open issues](https://github.com/mohana-pamidi/gator-exchange/issues) fo
 [Bootstrap-url]: https://getbootstrap.com
 [JQuery.com]: https://img.shields.io/badge/jQuery-0769AD?style=for-the-badge&logo=jquery&logoColor=white
 [JQuery-url]: https://jquery.com
-
-<!-- # Gator Exchange
-
-## To get started run:
-
-npm init
-
-npm install
-
-npm install express
-
-## Install dependencies
-npm install dotenv -->
